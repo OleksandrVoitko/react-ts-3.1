@@ -4,17 +4,31 @@ import { ContactForm } from './ContactForm/ContactForm';
 import { nanoid } from 'nanoid';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
+import phoneNumbers from '../data/phoneNumbers.json';
+import { DellAlert } from './DellAlert/DellAlert';
 
 export class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
+    deleted: false,
+    delName: '',
   };
+
+  componentDidMount() {
+    if (localStorage.getItem('contacts')) {
+      this.setState({ contacts: JSON.parse(localStorage.getItem('contacts')) });
+    } else {
+      this.setState({ contacts: [...phoneNumbers] });
+      localStorage.setItem('contacts', JSON.stringify(phoneNumbers));
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    if (prevState.contacts.length > this.state.contacts.length) {
+      setTimeout(() => this.setState({ deleted: false, delName: '' }), 2000);
+    }
+  }
 
   handleChange = ({ target }) => {
     this.setState({ [target.name]: target.value });
@@ -46,7 +60,12 @@ export class App extends Component {
 
   handleDeleteContact = id => {
     const { contacts } = this.state;
-    this.setState({ contacts: contacts.filter(contact => contact.id !== id) });
+
+    this.setState({
+      contacts: contacts.filter(contact => contact.id !== id),
+      deleted: true,
+      delName: contacts.find(contact => contact.id !== id).name,
+    });
   };
 
   render() {
@@ -56,6 +75,7 @@ export class App extends Component {
         <ContactForm onSubmit={this.handleSubmit} />
         <h2>Contacts</h2>
         <Filter filter={this.state.filter} onChange={this.handleChange} />
+        {this.state.deleted && <DellAlert>{this.state.delName}</DellAlert>}
         <ContactList
           contacts={this.getFilteredContacts()}
           handleDeleteContact={this.handleDeleteContact}
