@@ -60,11 +60,17 @@ export class App extends Component {
 
   handleDeleteContact = id => {
     const { contacts } = this.state;
+    console.log('id', id);
+    console.log(contacts);
+    console.log(
+      '',
+      contacts.find(contact => contact.id !== id)
+    );
 
     this.setState({
       contacts: contacts.filter(contact => contact.id !== id),
       deleted: true,
-      delName: contacts.find(contact => contact.id !== id).name,
+      delName: contacts.find(contact => contact.id === id).name,
     });
   };
 
